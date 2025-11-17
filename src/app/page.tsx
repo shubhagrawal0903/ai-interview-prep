@@ -49,8 +49,10 @@ function QACard({ qa }: { qa: QAPair }) {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 space-y-4">
-      <h3 className="text-xl font-semibold text-blue-400 mb-3">(Q) {qa.question}</h3>
+    // Card padding mobile ke liye chhota (p-4) aur desktop ke liye bada (md:p-6)
+    <div className="bg-gray-800 p-4 md:p-6 rounded-lg shadow-lg border border-gray-700 space-y-4">
+      {/* Card ka title mobile pe chhota (text-lg) aur desktop pe bada (md:text-xl) */}
+      <h3 className="text-lg md:text-xl font-semibold text-blue-400 mb-3">(Q) {qa.question}</h3>
       <p className="text-gray-300">(A) {qa.answer}</p>
       <hr className="border-gray-600" />
 
@@ -134,27 +136,34 @@ export default function HomePage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-12 bg-gray-900 text-white">
-      <h1 className="text-5xl font-extrabold mb-4">AI Interview Q&A Generator</h1>
-      <p className="text-xl text-gray-400 mb-8">
+    // Main padding mobile ke liye p-6, desktop ke liye md:p-12
+    <main className="flex min-h-screen flex-col items-center p-6 md:p-12 bg-gray-900 text-white">
+      {/* Title mobile pe chhota (text-3xl) aur desktop pe bada (sm:text-5xl), aur text-center */}
+      <h1 className="text-3xl sm:text-5xl font-extrabold mb-4 text-center">AI Interview Q&A Generator</h1>
+      {/* Subtitle bhi responsive aur center mein */}
+      <p className="text-lg sm:text-xl text-gray-400 mb-8 text-center">
         Enter a topic, and get 10 interview questions with answers.
       </p>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-xl mb-12">
-        <div className="flex items-center gap-4">
+      {/* Form ki max-width badha di taaki woh neeche ke cards se match kare */}
+      <form onSubmit={handleSubmit} className="w-full max-w-3xl mb-12">
+        {/* Form layout mobile pe column (flex-col) aur desktop pe row (sm:flex-row) */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
           <input
             type="text"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="e.g., React.js, JavaScript, Node.js"
-            className="flex-grow p-4 rounded-lg bg-gray-800 text-white placeholder-gray-500 border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            // Input mobile pe full width (w-full) aur desktop pe flex-grow
+            className="w-full sm:flex-grow p-4 rounded-lg bg-gray-800 text-white placeholder-gray-500 border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading}
-            className="p-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+            // Button mobile pe full width (w-full) aur desktop pe auto-width (sm:w-auto)
+            className="w-full sm:w-auto p-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             {isLoading ? "Generating..." : "Generate"}
           </button>
@@ -162,7 +171,8 @@ export default function HomePage() {
       </form>
 
       {error && (
-        <div className="w-full max-w-xl mb-6 p-4 rounded-lg bg-red-800 border border-red-600 text-white">
+        // Error message ki width bhi max-w-3xl kar di
+        <div className="w-full max-w-3xl mb-6 p-4 rounded-lg bg-red-800 border border-red-600 text-white">
           <p>
             <span className="font-bold">Error:</span> {error}
           </p>
@@ -178,7 +188,8 @@ export default function HomePage() {
 
       {qaPairs.length > 0 && (
         <section className="w-full max-w-3xl space-y-6">
-          <h2 className="text-3xl font-bold text-center">
+          {/* Section title bhi mobile pe chhota (text-2xl) aur desktop pe bada (sm:text-3xl) */}
+          <h2 className="text-2xl sm:text-3xl font-bold text-center">
             Your {topic} Questions
           </h2>
           {qaPairs.map((qa, index) => (
