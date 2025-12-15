@@ -172,6 +172,7 @@ export default function HomePage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [qaPairs, setQaPairs] = useState<QAPair[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const loadMoreButtonRef = React.useRef<HTMLDivElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,6 +203,9 @@ export default function HomePage() {
     setIsLoadingMore(true);
     setError(null);
 
+    // Store current position before loading more
+    const scrollPosition = loadMoreButtonRef.current?.offsetTop || 0;
+
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -214,10 +218,10 @@ export default function HomePage() {
       const data = await response.json();
       setQaPairs([...qaPairs, ...data]);
       
-      // Scroll to new questions
+      // Scroll to where new questions start (just after the button position)
       setTimeout(() => {
         window.scrollTo({
-          top: document.body.scrollHeight,
+          top: scrollPosition - 100, // Slight offset for better view
           behavior: "smooth",
         });
       }, 100);
@@ -344,7 +348,7 @@ export default function HomePage() {
             ))}
 
             {/* Load More Button */}
-            <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/30 backdrop-blur-sm text-center animate-fadeIn">
+            <div ref={loadMoreButtonRef} className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/30 backdrop-blur-sm text-center animate-fadeIn">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
