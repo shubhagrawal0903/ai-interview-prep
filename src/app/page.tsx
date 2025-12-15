@@ -167,7 +167,9 @@ function QACard({ qa, index }: { qa: QAPair; index: number }) {
 
 export default function HomePage() {
   const [topic, setTopic] = useState("");
+  const [currentTopic, setCurrentTopic] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [qaPairs, setQaPairs] = useState<QAPair[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -176,6 +178,7 @@ export default function HomePage() {
     setIsLoading(true);
     setQaPairs([]);
     setError(null);
+    setCurrentTopic(topic);
 
     try {
       const response = await fetch("/api/generate", {
@@ -192,6 +195,36 @@ export default function HomePage() {
       setError("Error generating questions. Try again after 10–15 seconds.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: currentTopic }),
+      });
+
+      if (!response.ok) throw new Error();
+
+      const data = await response.json();
+      setQaPairs([...qaPairs, ...data]);
+      
+      // Scroll to new questions
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    } catch {
+      setError("Error generating more questions. Try again after 10–15 seconds.");
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -301,24 +334,58 @@ export default function HomePage() {
           <section className="w-full max-w-4xl space-y-6 pb-16">
             <div className="text-center mb-8 animate-fadeIn">
               <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
-                Your {topic} Interview Questions
+                Your {currentTopic} Interview Questions
               </h2>
               <p className="text-gray-400">Practice each question and get instant AI feedback</p>
             </div>
 
             {qaPairs.map((qa, index) => (
-              <QACard key={index} qa={qa} index={index} />
+              <QACard key={`${currentTopic}-${index}`} qa={qa} index={index} />
             ))}
 
-            {/* Completion Message */}
-            <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-emerald-500/30 backdrop-blur-sm text-center animate-fadeIn">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+            {/* Load More Button */}
+            <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/30 backdrop-blur-sm text-center animate-fadeIn">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-emerald-300 mb-2">Great Job!</h3>
-              <p className="text-gray-300">You've completed all {qaPairs.length} questions. Keep practicing to master your skills!</p>
+              <h3 className="text-2xl font-bold text-blue-300 mb-2">Want More Practice?</h3>
+              <p className="text-gray-300 mb-6">Load more questions on {currentTopic} to continue improving!</p>
+              
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg hover:from-blue-700 hover:to-purple-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-3 mx-auto group"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading More Questions...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Load More Questions</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Completion Message */}
+            <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-emerald-500/30 backdrop-blur-sm text-center animate-fadeIn">
+              <div className="flex items-center justify-center gap-2 text-emerald-300 mb-2">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-xl font-bold">You've completed {qaPairs.length} questions!</h3>
+              </div>
+              <p className="text-gray-400 text-sm">Keep practicing to master your skills 🚀</p>
             </div>
           </section>
         )}
