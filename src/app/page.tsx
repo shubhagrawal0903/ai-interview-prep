@@ -7,13 +7,14 @@ interface QAPair {
   answer: string;
 }
 
-function QACard({ qa }: { qa: QAPair }) {
+function QACard({ qa, index }: { qa: QAPair; index: number }) {
   const [userAnswer, setUserAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isGettingFeedback, setIsGettingFeedback] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
 
   const handleFeedback = async () => {
-    if (!userAnswer) {
+    if (!userAnswer.trim()) {
       setFeedback("Error: Please write your answer first.");
       return;
     }
@@ -44,45 +45,120 @@ function QACard({ qa }: { qa: QAPair }) {
   };
 
   return (
-    <div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 space-y-4">
-      <h3 className="text-lg font-semibold text-blue-400 mb-2">(Q) {qa.question}</h3>
-      <p className="text-gray-300 text-sm sm:text-base">(A) {qa.answer}</p>
+    <div className="group bg-gradient-to-br from-gray-800/50 via-gray-800/30 to-gray-900/50 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 animate-fadeIn space-y-4">
+      {/* Question Number Badge */}
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+          {index + 1}
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-3 leading-relaxed">
+            {qa.question}
+          </h3>
+        </div>
+      </div>
 
-      <div className="space-y-2">
-        <label className="text-base font-semibold text-white">Your Answer:</label>
+      {/* Answer Section with Toggle */}
+      <div className="bg-gray-900/40 rounded-xl p-4 border border-gray-700/30">
+        <button
+          onClick={() => setShowAnswer(!showAnswer)}
+          className="flex items-center justify-between w-full text-left group/answer"
+        >
+          <span className="text-sm font-semibold text-gray-300 group-hover/answer:text-blue-400 transition-colors">
+            {showAnswer ? "Hide" : "Show"} Expected Answer
+          </span>
+          <svg
+            className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${
+              showAnswer ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {showAnswer && (
+          <p className="mt-3 text-gray-300 text-sm sm:text-base leading-relaxed animate-fadeIn">
+            {qa.answer}
+          </p>
+        )}
+      </div>
+
+      {/* Practice Area */}
+      <div className="space-y-3 pt-2">
+        <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+          <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
+          Your Answer:
+        </label>
         <textarea
           value={userAnswer}
           onChange={(e) => setUserAnswer(e.target.value)}
-          placeholder="Type your answer..."
-          className="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 text-sm focus:ring-2 focus:ring-blue-500"
-          rows={3}
+          placeholder="Type your answer here and get instant AI feedback..."
+          className="w-full p-4 rounded-xl bg-gray-900/60 text-white placeholder-gray-500 border border-gray-700/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm sm:text-base resize-none outline-none"
+          rows={4}
           disabled={isGettingFeedback}
         />
         <button
           onClick={handleFeedback}
-          disabled={isGettingFeedback}
-          className="p-3 w-full rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 disabled:bg-gray-600"
+          disabled={isGettingFeedback || !userAnswer.trim()}
+          className="w-full p-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold hover:from-emerald-700 hover:to-green-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2"
         >
-          {isGettingFeedback ? "Analyzing..." : "Get AI Feedback"}
+          {isGettingFeedback ? (
+            <>
+              <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Analyzing...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span>Get AI Feedback</span>
+            </>
+          )}
         </button>
       </div>
 
+      {/* Feedback Display */}
       {feedback && (
         <div
-          className={`p-3 rounded-lg text-sm ${
+          className={`p-4 rounded-xl text-sm sm:text-base animate-fadeIn ${
             feedback.startsWith("Error:")
-              ? "bg-red-800 border border-red-600"
-              : "bg-gray-700 border border-gray-600"
+              ? "bg-red-900/30 border border-red-500/50 backdrop-blur-sm"
+              : "bg-gradient-to-br from-emerald-900/30 to-green-900/20 border border-emerald-500/30 backdrop-blur-sm"
           }`}
         >
-          <h4
-            className={`font-semibold mb-1 ${
-              feedback.startsWith("Error:") ? "text-red-300" : "text-green-400"
-            }`}
-          >
-            {feedback.startsWith("Error:") ? "Error:" : "AI Feedback:"}
-          </h4>
-          <p className="text-white">{feedback.replace("Error: ", "")}</p>
+          <div className="flex items-start gap-3">
+            {feedback.startsWith("Error:") ? (
+              <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            )}
+            <div className="flex-1">
+              <h4
+                className={`font-semibold mb-2 ${
+                  feedback.startsWith("Error:") ? "text-red-300" : "text-emerald-300"
+                }`}
+              >
+                {feedback.startsWith("Error:") ? "Error" : "AI Feedback"}
+              </h4>
+              <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                {feedback.replace("Error: ", "")}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -120,59 +196,133 @@ export default function HomePage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-4 bg-gray-900 text-white">
-      <h1 className="text-2xl sm:text-4xl font-extrabold mb-3 text-center">
-        AI Interview Q&A Generator
-      </h1>
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.2),rgba(255,255,255,0))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(59,130,246,0.15),rgba(255,255,255,0))]" />
+      </div>
 
-      <p className="text-base sm:text-lg text-gray-400 mb-6 text-center px-2">
-        Enter a topic and get 10 interview questions with answers.
-      </p>
-
-      <form onSubmit={handleSubmit} className="w-full max-w-xl mb-10 space-y-3">
-        <input
-          type="text"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          placeholder="e.g., React.js, JavaScript, Node.js"
-          className="w-full p-3 rounded-lg bg-gray-800 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500 text-sm"
-          required
-          disabled={isLoading}
-        />
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full p-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-600"
-        >
-          {isLoading ? "Generating..." : "Generate"}
-        </button>
-      </form>
-
-      {error && (
-        <div className="w-full max-w-xl mb-6 p-3 rounded-lg bg-red-800 border border-red-600 text-sm text-white">
-          {error}
+      <div className="relative flex flex-col items-center p-4 sm:p-6 lg:p-8 min-h-screen">
+        {/* Header Section */}
+        <div className="w-full max-w-5xl mb-12 mt-8 sm:mt-12 text-center space-y-6 animate-fadeIn">
+          <div className="inline-block">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 leading-tight">
+              AI Interview Prep
+            </h1>
+          </div>
+          
+          <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            Master your interview skills with AI-powered questions and instant feedback.
+            <span className="block mt-2 text-base text-gray-400">Practice makes perfect! 🚀</span>
+          </p>
         </div>
-      )}
 
-      {isLoading && qaPairs.length === 0 && (
-        <div className="flex flex-col items-center mt-2">
-          <p className="text-gray-400 text-sm">Generating your questions...</p>
-          <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mt-3"></div>
-        </div>
-      )}
+        {/* Input Form */}
+        <form onSubmit={handleSubmit} className="w-full max-w-2xl mb-12 space-y-4 animate-slideIn">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+            <div className="relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-700/50">
+              <label className="block text-sm font-semibold text-gray-300 mb-3">
+                What topic would you like to practice?
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="e.g., React.js, JavaScript, Machine Learning, System Design..."
+                  className="w-full p-4 pr-12 rounded-xl bg-gray-900/60 text-white placeholder-gray-500 border border-gray-700/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all text-base outline-none"
+                  required
+                  disabled={isLoading}
+                />
+                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
 
-      {qaPairs.length > 0 && (
-        <section className="w-full max-w-xl space-y-5 pb-10">
-          <h2 className="text-xl sm:text-2xl font-bold text-center mb-2">
-            Your {topic} Questions
-          </h2>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="mt-4 w-full p-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg hover:from-blue-700 hover:to-purple-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-3 group"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Generating Questions...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Generate Interview Questions</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
 
-          {qaPairs.map((qa, index) => (
-            <QACard key={index} qa={qa} />
-          ))}
-        </section>
-      )}
+        {/* Error Message */}
+        {error && (
+          <div className="w-full max-w-2xl mb-6 p-4 rounded-xl bg-red-900/30 border border-red-500/50 backdrop-blur-sm text-white animate-fadeIn flex items-start gap-3">
+            <svg className="w-6 h-6 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h4 className="font-semibold text-red-300">Error</h4>
+              <p className="text-sm text-gray-200 mt-1">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && qaPairs.length === 0 && (
+          <div className="flex flex-col items-center mt-8 animate-fadeIn">
+            <div className="relative">
+              <div className="w-20 h-20 border-4 border-blue-500/20 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-gray-300 text-lg mt-6 font-medium">Crafting your questions...</p>
+            <p className="text-gray-500 text-sm mt-2">This may take a few moments</p>
+          </div>
+        )}
+
+        {/* Questions Section */}
+        {qaPairs.length > 0 && (
+          <section className="w-full max-w-4xl space-y-6 pb-16">
+            <div className="text-center mb-8 animate-fadeIn">
+              <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+                Your {topic} Interview Questions
+              </h2>
+              <p className="text-gray-400">Practice each question and get instant AI feedback</p>
+            </div>
+
+            {qaPairs.map((qa, index) => (
+              <QACard key={index} qa={qa} index={index} />
+            ))}
+
+            {/* Completion Message */}
+            <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-emerald-500/30 backdrop-blur-sm text-center animate-fadeIn">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-emerald-300 mb-2">Great Job!</h3>
+              <p className="text-gray-300">You've completed all {qaPairs.length} questions. Keep practicing to master your skills!</p>
+            </div>
+          </section>
+        )}
+      </div>
     </main>
   );
 }
