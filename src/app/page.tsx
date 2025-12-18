@@ -293,19 +293,6 @@ export default function HomePage() {
       </div>
 
       <div className="relative flex flex-col items-center p-4 sm:p-6 lg:p-8 min-h-screen">
-        {/* Dashboard Link - Top Right */}
-        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-10">
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 sm:px-6 sm:py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 text-sm sm:text-base"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <span className="hidden sm:inline">Dashboard</span>
-          </Link>
-        </div>
-
         {/* Header Section */}
         <div className="w-full max-w-5xl mb-12 mt-8 sm:mt-12 text-center space-y-6 animate-fadeIn">
           <div className="inline-block">
