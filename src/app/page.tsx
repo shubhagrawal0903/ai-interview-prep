@@ -1,15 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 interface QAPair {
   question: string;
   answer: string;
+  userAnswer?: string;
+  feedback?: string;
+  is_correct_enough?: boolean;
 }
 
-function QACard({ qa, index }: { qa: QAPair; index: number }) {
-  const [userAnswer, setUserAnswer] = useState("");
-  const [feedback, setFeedback] = useState("");
+function QACard({ qa, index, onFeedbackReceived }: { qa: QAPair; index: number; onFeedbackReceived: (index: number, userAnswer: string, feedback: string, isCorrectEnough: boolean) => void }) {
+  const [userAnswer, setUserAnswer] = useState(qa.userAnswer || "");
+  const [feedback, setFeedback] = useState(qa.feedback || "");
   const [isGettingFeedback, setIsGettingFeedback] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
 
@@ -37,6 +41,9 @@ function QACard({ qa, index }: { qa: QAPair; index: number }) {
 
       const data = await response.json();
       setFeedback(data.feedback);
+      
+      // Update parent state with user answer, feedback, and correctness
+      onFeedbackReceived(index, userAnswer, data.feedback, data.is_correct_enough ?? false);
     } catch {
       setFeedback("Error: Failed to get feedback. Please try again.");
     } finally {
@@ -174,6 +181,51 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const loadMoreButtonRef = React.useRef<HTMLDivElement>(null);
 
+  // Handle feedback received and save session
+  const handleFeedbackReceived = async (index: number, userAnswer: string, feedback: string, isCorrectEnough: boolean) => {
+    try {
+      // Update the qaPairs state with user answer, feedback, and correctness
+      const updatedQaPairs = [...qaPairs];
+      updatedQaPairs[index] = {
+        ...updatedQaPairs[index],
+        userAnswer,
+        feedback,
+        is_correct_enough: isCorrectEnough,
+      };
+      setQaPairs(updatedQaPairs);
+
+      // Save session to Supabase via API route (with Clerk authentication)
+      const response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: currentTopic,
+          sessionData: updatedQaPairs.map(qa => ({
+            question: qa.question,
+            answer: qa.answer,
+            user_answer: qa.userAnswer,
+            ai_feedback: {
+              feedback: qa.feedback,
+              is_correct_enough: qa.is_correct_enough ?? false,
+            },
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save session');
+      }
+
+      const result = await response.json();
+      console.log('Session saved successfully:', result);
+    } catch (error: any) {
+      console.error('Failed to save session to database:', error);
+      // Optionally show error to user
+      // setError('Failed to save your progress. Your data is still available in this session.');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -241,6 +293,19 @@ export default function HomePage() {
       </div>
 
       <div className="relative flex flex-col items-center p-4 sm:p-6 lg:p-8 min-h-screen">
+        {/* Dashboard Link - Top Right */}
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-10">
+          <Link
+            href="/dashboard"
+            className="px-4 py-2 sm:px-6 sm:py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 text-sm sm:text-base"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+        </div>
+
         {/* Header Section */}
         <div className="w-full max-w-5xl mb-12 mt-8 sm:mt-12 text-center space-y-6 animate-fadeIn">
           <div className="inline-block">
@@ -344,7 +409,12 @@ export default function HomePage() {
             </div>
 
             {qaPairs.map((qa, index) => (
-              <QACard key={`${currentTopic}-${index}`} qa={qa} index={index} />
+              <QACard 
+                key={`${currentTopic}-${index}`} 
+                qa={qa} 
+                index={index}
+                onFeedbackReceived={handleFeedbackReceived}
+              />
             ))}
 
             {/* Load More Button */}
