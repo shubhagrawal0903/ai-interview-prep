@@ -17,7 +17,7 @@ const Hyperspeed = dynamic(() => import('@/components/Hyperspeed'), {
 
 export default function HomePage() {
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full min-h-screen overflow-hidden pb-20 md:pb-0">
       {/* Hyperspeed Background */}
       <div className="absolute inset-0 z-0">
         <Hyperspeed effectOptions={hyperspeedPresets.one} />
@@ -27,7 +27,7 @@ export default function HomePage() {
       <div className="absolute inset-0 z-10 bg-linear-to-b from-black/60 via-transparent to-black/80" />
 
       {/* Content */}
-      <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-20 md:py-0">
         <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
           {/* Hero Title */}
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 animate-fadeIn leading-tight">
