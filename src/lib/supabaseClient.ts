@@ -1,13 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ??
+  process.env.SUPABASE_URL ??
+  '';
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables!');
-  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
-  console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseKey ? 'Set' : 'Missing');
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.SUPABASE_ANON_KEY ??
+  '';
+
+if (!supabaseUrl.startsWith('http')) {
+  throw new Error(
+    'Invalid supabaseUrl from env: ' + JSON.stringify(supabaseUrl)
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
